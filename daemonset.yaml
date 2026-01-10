@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ptp-daemon
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: ptp
+  template:
+    metadata:
+      labels:
+        app: ptp
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      containers:
+      - name: ptp
+        image: bmw.ece.ntust.edu.tw/infidel/ptp-agent:okd
+        imagePullPolicy: Always
+        env:
+        - name: PTP_INTERFACE
+          value: "ens7f0"
+        - name: PTP_DOMAIN
+          value: "24"
+        - name: TX_TIMEOUT
+          value: "100"
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN", "SYS_TIME", "NET_RAW", "SYS_NICE"]
+      tolerations:
+      - operator: Exists
